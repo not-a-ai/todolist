@@ -70,22 +70,22 @@
           </div>
           </div>
           
-          <q-list bordered>
-            <q-item v-for="task in filteredTasks" :key="task.id" clickable>
-              <q-item-section class=" q-ma-sm color full-width" style="background-color: aquamarine;">
+          <q-list>
+            <q-item v-for="task in filteredTasks" :key="task.id" clickable class="q-ma-lg" id="card-task">
+              <q-item-section class=" q-ma-sm color full-width" id="task">
                 <div class="col la-align-center">
-                  <b class="text-center">{{ task.title }}</b>
+                  <b class="text-center">Tarefa: {{ task.title }}</b>
                   <p>{{ task.description }}</p>
 
-                  <div class="row flex-center">
-                    <p class="col-5 text-center">Status: {{ task.status }}</p>
-                    <p class="col-5 text-center">Prioridade: {{ task.priority }}</p>
+                  <div class="row">
+                    <p class="col-5 ">Status: {{task.status ?  task.status :  "-" }}</p>
+                    <p class="col-5 ">Prioridade: {{task.priority ? task.priority :  "-" }}</p>
                   </div>
 
                 </div>
                 <div class="text-caption text-grey-6">
                   Criada em: {{ task.createdAt }}
-                  Prazo: {{ task.dueDate }}
+                  Prazo: {{ task.dueDate ? new Date(task.dueDate).toLocaleDateString('pt-BR') :  "-"}}
                 </div>
                 <div v-if="task.dueDate">
                   
@@ -216,5 +216,13 @@ export default {
 .text-h5 {
   font-weight: bold;
   text-align: center;
+}
+#card-task {
+  border: 0.5rem solid #1976D2;
+  border-radius: 1rem;
+}
+#task {
+  padding: 1rem;
+
 }
 </style>
