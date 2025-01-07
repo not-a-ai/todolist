@@ -10,22 +10,16 @@
           <q-input v-model="newTask.title" label="Atividade" filled />
           <q-input v-model="newTask.description" label="Descrição" filled class="q-mt-sm" />
           <div class="q-pa-md row">
-            <div class="q-mt-md col-4">Prioridade:
-              <q-radio
+            <div class="q-mt-md col-6">
+              <p>Prioridade:</p>
+              <q-checkbox
                 v-model="newTask.priority"
-                val="normal"
-                label="Normal"
-                color="primary"
-              />
-              <q-radio
-                v-model="newTask.priority"
-                val="alta"
                 label="Alta"
-                color="red"
+                color="blue"
               />
             </div>
 
-            <div class="q-mt-md col-4">
+            <div class="q-mt-md col-6">
               <label>Status:</label>
               <q-option-group
                 v-model="newTask.status"
@@ -35,14 +29,7 @@
               />
             </div>
 
-            <div class="q-mt-md col-4">
-              <q-input
-                v-model="newTask.dueDate"
-                type="date"
-                label="Data de Conclusão"
-                filled
-              />
-            </div>
+
           </div>
           <q-btn @click="addTask" label="Adicionar Tarefa" color="primary" class="q-mt-md" />
         </q-card-section>
@@ -50,21 +37,19 @@
         <q-separator class="q-my-md" />
         <q-card-section>
           <div class="row" >
-            <div class=" items-center col-5 q-mr-auto">
+            <div class=" items-center col-4 q-mr-auto">
             <q-select
               v-model="filter"
               :options="filters"
               label="Filtrar Tarefas"
-              outlined
               class="col-6"
             />
           </div>
-          <div class=" items-center col-5 ">
+          <div class=" items-center col-4 ">
             <q-select
               v-model="order"
               :options="orders"
               label="Ordenar Tarefas"
-              outlined
               class="col-6"
             />
           </div>
@@ -74,24 +59,26 @@
             <q-item v-for="task in filteredTasks" :key="task.id" clickable class="q-ma-lg" id="card-task">
               <q-item-section class=" q-ma-sm color full-width" id="task">
                 <div class="col la-align-center">
-                  <b class="text-center">Tarefa: {{ task.title }}</b>
+                  <b class="text-center">{{ task.title }}</b>
+                  <q-separator class="q-my-md" />
                   <p>{{ task.description }}</p>
 
                   <div class="row">
                     <p class="col-5 ">Status: {{task.status ?  task.status :  "-" }}</p>
-                    <p class="col-5 ">Prioridade: {{task.priority ? task.priority :  "-" }}</p>
+                    <p class="col-5 ">Prioridade: {{task.priority === true ? "Alta" :  "Normal" }}</p>
                   </div>
-
                 </div>
+                <q-separator class="q-my-md-sm" />
                 <div class="text-caption text-grey-6">
                   Criada em: {{ task.createdAt }}
-                  Prazo: {{ task.dueDate ? new Date(task.dueDate).toLocaleDateString('pt-BR') :  "-"}}
                 </div>
-                <div v-if="task.dueDate">
-                  
+                <div class="text-caption text-grey-6">
+                  Concluída em: {{ task.finishDate ? task.finishDate :  "-"}}
                 </div>
               </q-item-section>
               <q-item-section side>
+                <q-btn flat icon="stop" @click="task.status = 'a fazer'"></q-btn>
+                <q-btn flat icon="start" @click="task.status = 'fazendo'"></q-btn>
                 <q-btn flat icon="check" @click="toggleTaskStatus(task)" />
                 <q-btn flat icon="delete" color="negative" @click="deleteTask(task.id)" />
               </q-item-section>
@@ -103,113 +90,160 @@
   </q-page>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      newTask: {
-        title: "",
-        description: "",
-        priority: "",
-        status: "",
-        dueDate: "",
-      },
-      tasks: [],
-      priorities: [
-        { label: "Prioridade Normal", value: "normal" },
-        { label: "Prioridade Alta", value: "high" },
-      ],
-      statuses: [
-        { label: "A fazer", value: "a fazer" },
-        { label: "Fazendo", value: "fazendo" },
-        { label: "Concluído", value: "feito" },
-      ],
-      filter: "Todas",
-      filters: [
-        { label: "Todas", value: "all" },
-        { label: "A fazer", value: "todo" },
-        { label: "Fazendo", value: "doing" },
-        { label: "Feito", value: "done" },
-        { label: "Alta prioridade", value: "high" },
-      ],
-      order: "",
-      orders: [
+<script setup>
+  import { ref, reactive, computed } from "vue";
+  import { useQuasar } from "quasar";
 
-        { label: "Por data", value: "date"},
-        { label: "Por título", value: "name"},
-      ]
-    };
+  // Quasar Notify
+  const $q = useQuasar();
+
+  // Reactive states
+  const newTask = reactive({
+    title: "",
+    description: "",
+    priority: "",
+    status: "",
+    finishDate: "",
+  });
+
+  const tasks = ref([
+  {
+    id: 1,
+    title: "Finalizar projeto Vue.js",
+    description: "Concluir as funcionalidades principais",
+    priority: "alta",
+    status: "a fazer",
+    createdAt: "01/01/2025, 10:00:00",
+    finishDate: "30/01/2025, 10:00:00",
   },
-  computed: {
-  filteredTasks() {
-    let filtered = [];
+  {
+    id: 2,
+    title: "Revisar artigo de IA",
+    description: "Aprimorar o texto e adicionar referências",
+    priority: "normal",
+    status: "fazendo",
+    createdAt: "03/01/2025, 15:30:00",
+    finishDate: "",
+  },
+  {
+    id: 3,
+    title: "Preparar apresentação",
+    description: "Criar slides para o seminário",
+    priority: "alta",
+    status: "concluido",
+    createdAt: "02/01/2025, 09:00:00",
+    finishDate: "20/02/2025, 10:00:00",
+  },
+  {
+    id: 4,
+    title: "Estudar DevOps",
+    description: "Ler documentação sobre Kubernetes e Docker",
+    priority: "normal",
+    status: "a fazer",
+    createdAt: "05/01/2025, 08:00:00",
+    finishDate: "",
+  },
+  ]);
 
-    if (this.filter === "all") {
-      filtered = this.tasks;
-    } else if (this.filter === "pending") {
-      filtered = this.tasks.filter((task) => task.status === "doing");
-    } else if (this.filter === "completed") {
-      filtered = this.tasks.filter((task) => task.completed);
-    } else if (this.filter === "highPriority") {
-      filtered = this.tasks.filter((task) => task.priority === "high" );
+  const statuses = ref([
+    { label: "A fazer", value: "a fazer" },
+    { label: "Fazendo", value: "fazendo" },
+  ]);
+
+  const filter = ref("");
+
+  const filters = ref([
+    { label: "Todas", value: "todas" },
+    { label: "A fazer", value: "a fazer" },
+    { label: "Fazendo", value: "fazendo" },
+    { label: "Concluido", value: "concluido" },
+    { label: "Alta prioridade", value: "alta" },
+  ]);
+
+  const order = ref("");
+
+  const orders = ref([
+    { label: "Por data", value: "Por data" },
+    { label: "Por título", value: "Por nome" },
+  ]);
+
+  const filteredTasks = computed(() => {
+    let filtered = new Array(...tasks.value);
+    let filterValue = filter.value.value;
+
+    if (filterValue === "todas") {
+      filtered = tasks.value;
+    } else if (filterValue === "a fazer") {
+      filtered = tasks.value;
+    } else if (filterValue === "fazendo") {
+      filtered = tasks.value.filter((task) => task.status === "fazendo");
+    } else if (filterValue === "concluido") {
+      filtered = tasks.value.filter((task) => task.status === "concluido");
+    } else if (filterValue === "alta") {
+      filtered = tasks.value.filter((task) => task.priority === "alta");
     }
-    if (this.order === "date") {
-      return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (this.order === "name") {
-      return filtered.sort((a, b) => a.title.localeCompare(b.title));
-    } else {
-      filtered = this.tasks;
+    console.log(order.value.value);
+    if (order.value.value === "Por data") {
+      filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else if (order.value.value === "Por nome") {
+      filtered.sort((a, b) => a.title.localeCompare(b.title));
     }
-    console.log("Filtered tasks:", filtered); 
-    return filtered;
-  }
-},
-  methods: {
-    addTask() {
-      if (this.newTask.title.trim() === "") {
-        this.$q.notify({
-          type: "negative",
-          message: "O título é obrigatório!",
-        });
-        return;
-      }
+      console.log(filtered)
+      return filtered;
+  });
 
-      const task = {
-        id: Date.now(),
-        title: this.newTask.title,
-        description: this.newTask.description,
-        createdAt: new Date().toLocaleString(),
-        status: this.newTask.status,
-        priority: this.newTask.priority,
-        dueDate: this.newTask.dueDate,
-      };
+  // Methods
+  const addTask = () => {
+    if (newTask.title.trim() === "") {
+      $q.notify({
+        type: "negative",
+        message: "O título é obrigatório!",
+      });
+      return;
+    }
 
-      this.tasks.push(task);
+    const task = {
+      id: Date.now(),
+      title: newTask.title,
+      description: newTask.description,
+      createdAt: new Date().toLocaleString(),
+      status: newTask.status,
+      priority: newTask.priority,
+      finishDate: newTask.finishDate,
+    };
 
-      this.$q.notify({
-        type: "positive",
-        message: "Tarefa adicionada com sucesso!",
-      });
-      console.log(this.newTask);
-      console.log(this.tasks);
-    },
-    deleteTask(id) {
-      this.tasks = this.tasks.filter((task) => task.id !== id);
-      this.$q.notify({
-        type: "info",
-        message: "Tarefa removida!",
-      });
-    },
-    toggleTaskStatus(task) {
-      task.completed = !task.completed;
-      this.$q.notify({
-        type: task.completed ? "positive" : "warning",
-        message: `Tarefa marcada como ${task.completed ? "concluída" : "pendente"}!`,
-      });
-    },
-  }
-  
-}
+    tasks.value.push(task);
+
+    $q.notify({
+      type: "positive",
+      message: "Tarefa adicionada com sucesso!",
+    });
+
+    // Reset the newTask
+    newTask.title = "";
+    newTask.description = "";
+    newTask.priority = "";
+    newTask.status = "";
+    newTask.dueDate = "";
+  };
+
+  const deleteTask = (id) => {
+    tasks.value = tasks.value.filter((task) => task.id !== id);
+    $q.notify({
+      type: "info",
+      message: "Tarefa removida!",
+    });
+  };
+
+  const toggleTaskStatus = (task) => {
+    task.status = "Concluido";
+    task.finishDate = new Date().toLocaleString();
+    $q.notify({
+      type: task.completed ? "positive" : "warning",
+      message: `Tarefa marcada como ${
+        task.status}!`,
+    });
+  };
 </script>
 
 <style scoped>
@@ -218,7 +252,7 @@ export default {
   text-align: center;
 }
 #card-task {
-  border: 0.5rem solid #1976D2;
+  border: 0.5rem solid #1976d218;
   border-radius: 1rem;
 }
 #task {
