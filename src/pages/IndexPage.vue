@@ -3,7 +3,7 @@
     <div class="q-pa-md">
       <q-card>
         <q-card-section>
-          <div class="text-h5">ToDo List</div>
+          <div class="text-h5">Nova tarefas</div>
         </q-card-section>
 
         <q-card-section>
@@ -35,6 +35,7 @@
         </q-card-section>
 
         <q-separator class="q-my-md" />
+        <div class="text-h5">Tarefas</div>
         <q-card-section>
           <div class="row" >
             <div class=" items-center col-4 q-mr-auto">
@@ -174,7 +175,7 @@
     if (filterValue === "todas") {
       filtered = tasks.value;
     } else if (filterValue === "a fazer") {
-      filtered = tasks.value;
+      filtered = tasks.value.filter((task) => task.status === "a fazer");
     } else if (filterValue === "fazendo") {
       filtered = tasks.value.filter((task) => task.status === "fazendo");
     } else if (filterValue === "concluido") {
